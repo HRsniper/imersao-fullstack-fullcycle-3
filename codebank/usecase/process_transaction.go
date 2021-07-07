@@ -1,14 +1,18 @@
 package usecase
 
 import (
+	"encoding/json"
+	"os"
 	"time"
 
 	"github.com/hrsniper/imersao-fullstack-fullcycle-3/domain"
 	"github.com/hrsniper/imersao-fullstack-fullcycle-3/dto"
+	"github.com/hrsniper/imersao-fullstack-fullcycle-3/infrastructure/kafka"
 )
 
 type UseCaseTransaction struct {
 	TransactionRepository domain.TransactionRepository
+	KafkaProducer         kafka.KafkaProducer
 }
 
 func NewUseCaseTransaction(transactionRepository domain.TransactionRepository) UseCaseTransaction {
@@ -34,6 +38,20 @@ func (useCaseTransaction UseCaseTransaction) ProcessTransaction(transactionDto d
 	transaction.ProcessAndValidate(creditCard)
 
 	err = useCaseTransaction.TransactionRepository.SaveTransaction(*transaction, *creditCard)
+
+	if err != nil {
+		return domain.Transaction{}, err
+	}
+
+	transactionDto.ID = transaction.ID
+	transactionDto.CreatedAt = transaction.CreatedAt
+	transactionJson, err := json.Marshal(transactionDto)
+
+	if err != nil {
+		return domain.Transaction{}, err
+	}
+
+	err = useCaseTransaction.KafkaProducer.Publish(string(transactionJson), os.Getenv("KafkaTransactionsTopic"))
 
 	if err != nil {
 		return domain.Transaction{}, err
