@@ -1,4 +1,4 @@
-# Imersão Full Stack & FullCycle 3 - Codebank
+# Imersão Full Stack & FullCycle 3.0 - Codebank
 
 ## Descrição
 
