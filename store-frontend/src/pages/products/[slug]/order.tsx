@@ -1,13 +1,13 @@
 import {
-  Avatar,
-  Box,
+  Typography,
   Button,
-  Grid,
   ListItem,
   ListItemAvatar,
-  ListItemText,
+  Avatar,
   TextField,
-  Typography
+  Grid,
+  ListItemText,
+  Box
 } from "@material-ui/core";
 import axios from "axios";
 import { GetServerSideProps, NextPage } from "next";
@@ -15,7 +15,7 @@ import { useRouter } from "next/dist/client/router";
 import Head from "next/head";
 import { useSnackbar } from "notistack";
 import { useForm } from "react-hook-form";
-import { api } from "../../../api";
+import http from "../../../http";
 import { CreditCard, Product } from "../../../model";
 
 interface OrderPageProps {
@@ -29,15 +29,13 @@ const OrderPage: NextPage<OrderPageProps> = ({ product }) => {
 
   const onSubmit = async (data: CreditCard) => {
     try {
-      const { data: order } = await api.post("orders", {
+      const { data: order } = await http.post("orders", {
         credit_card: data,
         items: [{ product_id: product.id, quantity: 1 }]
       });
-
       router.push(`/orders/${order.id}`);
     } catch (error) {
       console.error(axios.isAxiosError(error) ? error.response?.data : error);
-
       enqueueSnackbar("Erro ao realizar sua compra.", {
         variant: "error"
       });
@@ -49,29 +47,23 @@ const OrderPage: NextPage<OrderPageProps> = ({ product }) => {
       <Head>
         <title>Pagamento</title>
       </Head>
-
       <Typography component="h1" variant="h3" color="textPrimary" gutterBottom>
         Checkout
       </Typography>
-
       <ListItem>
         <ListItemAvatar>
           <Avatar src={product.image_url} />
         </ListItemAvatar>
-
         <ListItemText primary={product.name} secondary={`R$ ${product.price}`} />
       </ListItem>
-
       <Typography component="h2" variant="h6" gutterBottom>
         Pague com cartão de crédito
       </Typography>
-
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <TextField {...register("name")} required label="Nome" fullWidth />
           </Grid>
-
           <Grid item xs={12} md={6}>
             <TextField
               {...register("number")}
@@ -81,11 +73,9 @@ const OrderPage: NextPage<OrderPageProps> = ({ product }) => {
               inputProps={{ maxLength: 16 }}
             />
           </Grid>
-
           <Grid item xs={12} md={6}>
             <TextField {...register("cvv")} required type="number" label="CVV" fullWidth />
           </Grid>
-
           <Grid item xs={12} md={6}>
             <Grid container spacing={3}>
               <Grid item xs={6}>
@@ -98,7 +88,6 @@ const OrderPage: NextPage<OrderPageProps> = ({ product }) => {
                   onChange={(e) => setValue("expiration_month", parseInt(e.target.value))}
                 />
               </Grid>
-
               <Grid item xs={6}>
                 <TextField
                   {...register("expiration_year")}
@@ -112,7 +101,6 @@ const OrderPage: NextPage<OrderPageProps> = ({ product }) => {
             </Grid>
           </Grid>
         </Grid>
-
         <Box marginTop={1}>
           <Button type="submit" variant="contained" color="primary" fullWidth>
             Pagar
@@ -123,11 +111,13 @@ const OrderPage: NextPage<OrderPageProps> = ({ product }) => {
   );
 };
 
-const getServerSideProps: GetServerSideProps<OrderPageProps, { slug: string }> = async (context) => {
-  const { slug } = context.params!;
+export default OrderPage;
 
+export const getServerSideProps: GetServerSideProps<OrderPageProps, { slug: string }> = async (context) => {
+  const { slug } = context.params!;
   try {
-    const { data: product } = await api.get(`products/${slug}`);
+    const { data: product } = await http.get(`products/${slug}`);
+
     console.log(product);
 
     return {
@@ -139,10 +129,6 @@ const getServerSideProps: GetServerSideProps<OrderPageProps, { slug: string }> =
     if (axios.isAxiosError(error) && error.response?.status === 404) {
       return { notFound: true };
     }
-
     throw error;
   }
 };
-
-export default OrderPage;
-export { getServerSideProps };

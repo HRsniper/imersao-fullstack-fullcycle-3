@@ -45,6 +45,8 @@ func (useCaseTransaction UseCaseTransaction) ProcessTransaction(transactionDto d
 
 	transactionDto.ID = transaction.ID
 	transactionDto.CreatedAt = transaction.CreatedAt
+	transactionDto.Status = transaction.Status
+
 	transactionJson, err := json.Marshal(transactionDto)
 
 	if err != nil {

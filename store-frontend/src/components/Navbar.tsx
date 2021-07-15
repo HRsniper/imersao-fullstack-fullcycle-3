@@ -1,4 +1,4 @@
-import { AppBar, Button, Toolbar, Typography } from "@material-ui/core";
+import { AppBar, Toolbar, Typography, Button } from "@material-ui/core";
 import StoreIcon from "@material-ui/icons/Store";
 import Link from "next/link";
 

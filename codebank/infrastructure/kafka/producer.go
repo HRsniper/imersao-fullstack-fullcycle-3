@@ -1,6 +1,10 @@
 package kafka
 
-import ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
+import (
+	"os"
+
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
+)
 
 type KafkaProducer struct {
 	Producer *ckafka.Producer
@@ -14,6 +18,10 @@ func NewKafkaProducer() KafkaProducer {
 func (kafkaProducer *KafkaProducer) SetupProducer(bootstrapServer string) {
 	configMap := &ckafka.ConfigMap{
 		"bootstrap.servers": bootstrapServer,
+		"security.protocol": os.Getenv("security.protocol"),
+		"sasl.mechanisms":   os.Getenv("sasl.mechanisms"),
+		"sasl.username":     os.Getenv("sasl.username"),
+		"sasl.password":     os.Getenv("sasl.password"),
 	}
 
 	kafkaProducer.Producer, _ = ckafka.NewProducer(configMap)
@@ -25,6 +33,7 @@ func (kafkaProducer *KafkaProducer) Publish(msg string, topic string) error {
 		TopicPartition: ckafka.TopicPartition{Topic: &topic, Partition: ckafka.PartitionAny},
 		Value:          []byte(msg),
 	}
+
 	err := kafkaProducer.Producer.Produce(message, nil)
 
 	if err != nil {

@@ -1,5 +1,9 @@
 # Imersão Full Stack & FullCycle 3.0 - Codebank
 
+## Sobre o repositório
+
+As instruções de instalações estão no `README.md` de cada projeto.
+
 ## Ordem recomendada de execução
 
 - Apache Kafka

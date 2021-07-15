@@ -1,11 +1,11 @@
-import { Button, Card, CardActions, CardContent, CardHeader, CardMedia, Typography } from "@material-ui/core";
+import { Card, CardMedia, CardContent, CardActions, CardHeader, Typography, Button } from "@material-ui/core";
 import axios from "axios";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { useRouter } from "next/dist/client/router";
 import Head from "next/head";
-import Link from "next/link";
-import { api } from "../../../api";
+import http from "../../../http";
 import { Product } from "../../../model";
+import Link from "next/link";
 
 interface ProductDetailPageProps {
   product: Product;
@@ -23,10 +23,8 @@ const ProductDetailPage: NextPage<ProductDetailPageProps> = ({ product }) => {
       <Head>
         <title>{product.name} - Detalhes do produto</title>
       </Head>
-
       <Card>
         <CardHeader title={product.name.toUpperCase()} subheader={`R$ ${product.price}`} />
-
         <CardActions>
           <Link href="/products/[slug]/order" as={`/products/${product.slug}/order`} passHref>
             <Button size="small" color="primary" component="a">
@@ -34,9 +32,7 @@ const ProductDetailPage: NextPage<ProductDetailPageProps> = ({ product }) => {
             </Button>
           </Link>
         </CardActions>
-
         <CardMedia style={{ paddingTop: "56%" }} image={product.image_url} />
-
         <CardContent>
           <Typography variant="body2" color="textSecondary" component="p">
             {product.description}
@@ -47,11 +43,12 @@ const ProductDetailPage: NextPage<ProductDetailPageProps> = ({ product }) => {
   );
 };
 
-const getStaticProps: GetStaticProps<ProductDetailPageProps, { slug: string }> = async (context) => {
-  const { slug } = context.params!;
+export default ProductDetailPage;
 
+export const getStaticProps: GetStaticProps<ProductDetailPageProps, { slug: string }> = async (context) => {
+  const { slug } = context.params!;
   try {
-    const { data: product } = await api.get(`products/${slug}`);
+    const { data: product } = await http.get(`products/${slug}`);
 
     console.log(product);
 
@@ -65,13 +62,12 @@ const getStaticProps: GetStaticProps<ProductDetailPageProps, { slug: string }> =
     if (axios.isAxiosError(error) && error.response?.status === 404) {
       return { notFound: true };
     }
-
     throw error;
   }
 };
 
-const getStaticPaths: GetStaticPaths = async (context) => {
-  const { data: products } = await api.get(`products`);
+export const getStaticPaths: GetStaticPaths = async (context) => {
+  const { data: products } = await http.get(`products`);
 
   const paths = products.map((product: Product) => ({
     params: { slug: product.slug }
@@ -81,6 +77,3 @@ const getStaticPaths: GetStaticPaths = async (context) => {
 };
 
 // /products/[slug]/order - pagamento
-
-export default ProductDetailPage;
-export { getStaticProps, getStaticPaths };
